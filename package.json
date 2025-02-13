@@ -1,0 +1,9 @@
+{
+  "name": "github-actions-playwright-testiny-example",
+  "version": "1.0.0",
+  "devDependencies": {
+    "@playwright/test": "1.50.1",
+    "@testiny/automation": "1.25.2",
+    "@types/node": "22.13.2"
+  }
+}
