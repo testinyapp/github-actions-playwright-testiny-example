@@ -1,0 +1,62 @@
+name: Playwright Tests (sharded)
+on: workflow_dispatch
+jobs:
+  test:
+    timeout-minutes: 10
+    runs-on: ubuntu-latest
+
+     # runs tests in parallel:
+    strategy:
+      fail-fast: false
+      matrix:
+        shardIndex: [1, 2]
+        shardTotal: [2]
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+        cache: npm
+
+    # Install your dependencies for your project & Testiny CLI:
+    - name: Install dependencies
+      run: |
+        npm ci
+        npm install --no-save @testiny/cli@latest
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps
+
+    # Run your automated tests & generate a report file
+    - name: Run Playwright tests
+      run: npx playwright test --shard=${{ matrix.shardIndex }}/${{ matrix.shardTotal }}
+      
+    # Run CLI to upload results (mark test run as incomplete; results will be reported to the same run)
+    - name: Upload test results to Testiny
+      if: ${{ !cancelled() }}
+      env: 
+        TESTINY_API_KEY: ${{ secrets.TESTINY_API_KEY }}
+      run: npx @testiny/cli automation --project 57 --source pw-tests --playwright results/results.json --incomplete  --custom-result-fields=type,some_link
+
+  complete-tests:
+    needs: [test]
+    if: always()
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-node@v4
+      with:
+        node-version: lts/*
+        cache: npm
+
+    # Install Testiny CLI
+    - name: Install dependencies
+      run: npm install --no-save @testiny/cli@latest
+    
+    # Mark test run as complete
+    - name: Complete test run
+      env: 
+        TESTINY_API_KEY: ${{ secrets.TESTINY_API_KEY }}
+      
+      run: npx @testiny/cli automation --project 57 --source pw-tests --complete-runs
