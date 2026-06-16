@@ -16,15 +16,21 @@ test.describe('Playwright Basic Example Tests', () => {
     })
   });
   
-  test.skip('test something', {
-      annotation: { type: 'testkey', description: 'atm-test-2' },
+  test.skip('test that tests something', {
+      annotation: [ 
+        { type: 'testkey', description: 'atm-test-2' },
+        { type: 'type', description: 'regression' },
+      ],
     }, async ({ page }) => {
     // skipped test
   });
   
   test.describe('Nested describe block', () => {
-    test('test that is always true', {
-      annotation: { type: 'testkey', description: 'atm-test-3' },
+    test('test that always passes', {
+      annotation: [
+        { type: 'testkey', description: 'atm-test-3' },
+        { type: 'type', description: 'smoke' },
+      ],
     },
       async ({ page }) => {
       expect(true).toBe(true);
